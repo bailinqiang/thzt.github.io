@@ -259,7 +259,7 @@
   
 
   <article class="post post-type-normal " itemscope="" itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="https://thzt.github.io/2015/01/27/y-combinator-in-javascript/">
+    <link itemprop="mainEntityOfPage" href="https://thzt.github.io/2015/01/27/y-combinator-in-lisp/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
@@ -278,7 +278,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2015/01/27/y-combinator-in-javascript/" itemprop="url">Y combinator in javascript</a></h1>
+                <a class="post-title-link" href="/2015/01/27/y-combinator-in-lisp/" itemprop="url">Y combinator in lisp</a></h1>
         
 
         <div class="post-meta">
@@ -349,106 +349,129 @@
       
         
           
-            <p>本文借助阶乘函数，在javascript中推导了Y combinator。</p>
+            <p>本文借助阶乘函数，在lisp中推导了Y combinator。</p>
 <p><br></p>
-<h2 id="原始的阶乘函数定义"><strong>原始的阶乘函数定义</strong></h2>
-<p>var fact=function(n){</p>
-<p>    return n==0?1:n*fact(n-1);</p>
-<p>};</p>
+<h2 id="原始的fact定义"><a href="#原始的fact定义" class="headerlink" title="原始的fact定义"></a><strong>原始的fact定义</strong></h2><p>(define fact</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;(lambda (n)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(if (= n 0)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(* n (fact (- n 1))))))</p>
 <p><br></p>
-<p>console.assert(fact(5)==120);</p>
+<h2 id="定义下文中用到的两个函数high-fact与fact-proto"><a href="#定义下文中用到的两个函数high-fact与fact-proto" class="headerlink" title="定义下文中用到的两个函数high-fact与fact-proto"></a><strong>定义下文中用到的两个函数high-fact与fact-proto</strong></h2><p>(define high-fact</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;(lambda (f)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(lambda (n)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(if (= n 0)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(* n ((f f) (- n 1)))</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>)</p>
 <p><br></p>
-<h2 id="把递归函数作为参数传递"><strong>把递归函数作为参数传递</strong></h2>
-<p>var highFact=function(f){</p>
-<p>    return function(n){</p>
-<p>        return n==0?1:n*f(f)(n-1);</p>
-<p>    };</p>
-<p>};</p>
+<p>(define fact-proto</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;(lambda (h)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(lambda (x)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(if (= x 0)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(* x (h (- x 1)))</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>)</p>
 <p><br></p>
-<p>console.assert(highFact(highFact)(5)==120);</p>
+<h2 id="fact就是high-fact对自身的调用"><a href="#fact就是high-fact对自身的调用" class="headerlink" title="fact就是high-fact对自身的调用"></a><strong>fact就是high-fact对自身的调用</strong></h2><p>fact&lt;=&gt;</p>
+<p>(high-fact high-fact)</p>
 <p><br></p>
-<h2 id="借助辅助函数消除对自身的调用"><strong>借助辅助函数消除对自身的调用</strong></h2>
-<p>var fact=(function(g){</p>
-<p>    return g(g);</p>
-<p>}(function(f){</p>
-<p>    return function(n){</p>
-<p>        return n==0?1:n*f(f)(n-1);</p>
-<p>    };</p>
-<p>}));</p>
+<h2 id="使用一个辅助函数消除重复出现的两个high-fact"><a href="#使用一个辅助函数消除重复出现的两个high-fact" class="headerlink" title="使用一个辅助函数消除重复出现的两个high-fact"></a><strong>使用一个辅助函数消除重复出现的两个high-fact</strong></h2><p>fact&lt;=&gt;</p>
+<p>(</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;(lambda (g) (g g))</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;high-fact</p>
+<p>)</p>
 <p><br></p>
-<p>console.assert(fact(5)==120);</p>
+<h2 id="代入high-fact的定义"><a href="#代入high-fact的定义" class="headerlink" title="代入high-fact的定义"></a><strong>代入high-fact的定义</strong></h2><p>fact&lt;=&gt;</p>
+<p>(</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;(lambda (g) (g g))</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;(lambda (f)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(lambda (n)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;;;; 变换前</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(if (= n 0)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(* n</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;((f f) (- n 1)))</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>)</p>
 <p><br></p>
-<h2 id="构造递归原型"><strong>构造递归原型</strong></h2>
-<p>var fact=(function(g){</p>
-<p>    return g(g);</p>
-<p>}(function(f){</p>
-<p>    return function(n){</p>
-<p>        var factProto=function(h){</p>
-<p>            return function(x){</p>
-<p>                return x==0?1:x*h(x-1);</p>
-<p>            };</p>
-<p>        };</p>
-<p>        return factProto(f(f))(n);</p>
-<p>    };</p>
-<p>}));</p>
+<h2 id="将局部表达式变换为对fact-proto的调用"><a href="#将局部表达式变换为对fact-proto的调用" class="headerlink" title="将局部表达式变换为对fact-proto的调用"></a><strong>将局部表达式变换为对fact-proto的调用</strong></h2><p>fact&lt;=&gt;</p>
+<p>(</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;(lambda (g) (g g))</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;(lambda (f)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(lambda (n)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;;;; 变换后</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(fact-proto (f f))</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;n</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>)    </p>
 <p><br></p>
-<p>console.assert(fact(5)==120);</p>
+<h2 id="将fact-proto变成形参"><a href="#将fact-proto变成形参" class="headerlink" title="将fact-proto变成形参"></a><strong>将fact-proto变成形参</strong></h2><p>fact&lt;=&gt;</p>
+<p>(</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;(lambda (k)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(lambda (g) (g g))</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(lambda (f)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(lambda (n)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(k (f f))</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;n</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;fact-proto</p>
+<p>)</p>
 <p><br></p>
-<h2 id="将递归原型提取出来"><strong>将递归原型提取出来</strong></h2>
-<p>var factProto=function(h){</p>
-<p>    return function(x){</p>
-<p>        return x==0?1:x*h(x-1);</p>
-<p>    };</p>
-<p>};</p>
+<h2 id="得到Y-combinator"><a href="#得到Y-combinator" class="headerlink" title="得到Y combinator"></a><strong>得到Y combinator</strong></h2><p>fact&lt;=&gt;</p>
+<p>(</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;y-combinator</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;fact-proto</p>
+<p>)</p>
 <p><br></p>
-<p>var fact=(function(g){</p>
-<p>    return g(g);</p>
-<p>}(function(f){</p>
-<p>    return function(n){</p>
-<p>        return factProto(f(f))(n);</p>
-<p>    };</p>
-<p>}));</p>
+<p>(define y-combinator</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;(lambda (k)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(lambda (g) (g g))</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(lambda (f)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(lambda (n)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(k (f f))</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;n</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;)</p>
+<p>)</p>
 <p><br></p>
-<p>console.assert(fact(5)==120);</p>
+<p>紧凑一点</p>
+<p>(define y-combinator</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;(lambda (k)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;((lambda (g) (g g))</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(lambda (f)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(lambda (n)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;((k (f f)) </p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;n))))))</p>
 <p><br></p>
-<h2 id="把递归原型变成形参"><strong>把递归原型变成形参</strong></h2>
-<p>var fact=(function(k){</p>
-<p>    return (function(g){</p>
-<p>        return g(g);</p>
-<p>    }(function(f){</p>
-<p>        return function(n){</p>
-<p>            return k(f(f))(n);</p>
-<p>        };</p>
-<p>    }));</p>
-<p>}(factProto));</p>
-<p><br></p>
-<p>console.assert(fact(5)==120);</p>
-<p><br></p>
-<h2 id="得到y-combinator"><strong>得到Y combinator</strong></h2>
-<p>var yCombinator=function(k){</p>
-<p>    return (function(g){</p>
-<p>        return g(g);</p>
-<p>    }(function(f){</p>
-<p>        return function(n){</p>
-<p>            return k(f(f))(n);</p>
-<p>        };</p>
-<p>    }));</p>
-<p>};</p>
-<p><br></p>
-<p>console.assert(yCombinator(factProto)(5)==120);</p>
-<p><br></p>
-<h2 id="扩展为多参数形式"><strong>扩展为多参数形式</strong></h2>
-<p>var yCombinator=function(k){</p>
-<p>    return (function(g){</p>
-<p>        return g(g);</p>
-<p>    }(function(f){</p>
-<p>        return function(){</p>
-<p>            return k(f(f)).apply(null,arguments);</p>
-<p>        };</p>
-<p>    }));</p>
-<p>};</p>
-<p><br></p>
-<p>console.assert(yCombinator(factProto)(5)==120);</p>
+<h2 id="扩展为多参数形式"><a href="#扩展为多参数形式" class="headerlink" title="扩展为多参数形式"></a><strong>扩展为多参数形式</strong></h2><p>(define y-combinator</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;(lambda (k)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;((lambda (g) (g g))</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(lambda (f)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(lambda ns</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(apply (k (f f)) ns))))))</p>
 
           
         
